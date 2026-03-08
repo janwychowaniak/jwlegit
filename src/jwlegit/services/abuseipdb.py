@@ -13,12 +13,12 @@ GUI_LINK = "https://www.abuseipdb.com/check/{ip}"
 
 
 async def check_abuseipdb(url: str) -> ServiceResult:
-    api_key = os.environ.get("ABUSEIPDB_API_SECRET")
+    api_key = os.environ.get("ABUSEIPDB_API_KEY")
     if not api_key:
         return ServiceResult(
             service_name="AbuseIPDB",
             verdict=Verdict.SKIPPED,
-            error="ABUSEIPDB_API_SECRET not set",
+            error="ABUSEIPDB_API_KEY not set",
         )
 
     hostname = urlparse(url).hostname

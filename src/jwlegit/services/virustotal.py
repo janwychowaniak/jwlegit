@@ -17,12 +17,12 @@ TIMEOUT = 60
 
 
 async def check_virustotal(url: str) -> ServiceResult:
-    api_key = os.environ.get("VIRUSTOTAL_API_SECRET")
+    api_key = os.environ.get("VIRUSTOTAL_API_KEY")
     if not api_key:
         return ServiceResult(
             service_name="VirusTotal",
             verdict=Verdict.SKIPPED,
-            error="VIRUSTOTAL_API_SECRET not set",
+            error="VIRUSTOTAL_API_KEY not set",
         )
 
     try:

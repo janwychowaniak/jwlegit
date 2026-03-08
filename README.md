@@ -13,10 +13,10 @@ uv pip install -e .
 Set API credentials as environment variables:
 
 ```bash
-export URLSCAN_API_SECRET="your-urlscan-api-key"
-export VIRUSTOTAL_API_SECRET="your-virustotal-api-key"
-export ABUSEIPDB_API_SECRET="your-abuseipdb-api-key"
-export GOOGLE_SAFEBROWSING_API_SECRET="your-google-api-key"
+export URLSCAN_API_KEY="your-urlscan-api-key"
+export VIRUSTOTAL_API_KEY="your-virustotal-api-key"
+export ABUSEIPDB_API_KEY="your-abuseipdb-api-key"
+export GOOGLE_SAFEBROWSING_API_KEY="your-google-api-key"
 ```
 
 Missing credentials will cause that service to be skipped (not crash).

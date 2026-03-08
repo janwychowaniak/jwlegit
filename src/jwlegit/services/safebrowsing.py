@@ -10,12 +10,12 @@ API_LOOKUP = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
 
 
 async def check_safebrowsing(url: str) -> ServiceResult:
-    api_key = os.environ.get("GOOGLE_SAFEBROWSING_API_SECRET")
+    api_key = os.environ.get("GOOGLE_SAFEBROWSING_API_KEY")
     if not api_key:
         return ServiceResult(
             service_name="Google Safe Browsing",
             verdict=Verdict.SKIPPED,
-            error="GOOGLE_SAFEBROWSING_API_SECRET not set",
+            error="GOOGLE_SAFEBROWSING_API_KEY not set",
         )
 
     try:
