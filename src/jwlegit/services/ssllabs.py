@@ -37,6 +37,15 @@ async def check_ssllabs(url: str) -> ServiceResult:
         async with httpx.AsyncClient(timeout=30) as client:
             result = await _analyze(client, hostname, email, register_attempted=False)
             return result
+    except httpx.HTTPStatusError as e:
+        body = e.response.text[:200] if e.response else ""
+        msg = f"{e}" if not body else f"{e.response.status_code}: {body}"
+        return ServiceResult(
+            service_name="SSL Labs",
+            verdict=Verdict.ERROR,
+            error=msg,
+            link=GUI_LINK.format(hostname=hostname),
+        )
     except Exception as e:
         return ServiceResult(
             service_name="SSL Labs",
@@ -58,8 +67,8 @@ async def _analyze(
 
     resp = await client.get(API_ANALYZE, params=params, headers=headers)
 
-    # Lazy auto-registration: if we get a 401/403, register and retry once
-    if resp.status_code in (401, 403) and not register_attempted:
+    # Lazy auto-registration: if we get a 400/401/403, register and retry once
+    if resp.status_code in (400, 401, 403) and not register_attempted:
         await _register(client, email)
         return await _analyze(
             client, hostname, email, register_attempted=True
@@ -101,9 +110,10 @@ async def _analyze(
 async def _register(client: httpx.AsyncClient, email: str) -> None:
     resp = await client.post(
         API_REGISTER,
-        json={"firstName": "jwlegit", "lastName": "user", "email": email, "organization": "personal"},
+        json={"firstName": "jwlegit", "lastName": "user", "email": email, "organization": "-"},
     )
-    resp.raise_for_status()
+    # Ignore errors — registration may already exist or require email verification.
+    # The subsequent analyze call will surface the real error if auth still fails.
 
 
 def _parse_result(hostname: str, data: dict) -> ServiceResult:
