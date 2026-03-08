@@ -12,6 +12,7 @@ from jwlegit.services.virustotal import check_virustotal
 from jwlegit.services.pythontls import check_tls
 from jwlegit.services.abuseipdb import check_abuseipdb
 from jwlegit.services.safebrowsing import check_safebrowsing
+from jwlegit.services.rdap import check_rdap
 
 
 def _validate_url(url: str) -> str:
@@ -32,6 +33,7 @@ async def _run(url: str) -> list[ServiceResult]:
         check_abuseipdb(url),
         check_safebrowsing(url),
         check_tls(url),
+        check_rdap(url),
     )
     return list(results)
 
@@ -39,7 +41,7 @@ async def _run(url: str) -> list[ServiceResult]:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="jwlegit",
-        description="Check URL reputation across urlscan.io, VirusTotal, AbuseIPDB, Google Safe Browsing, and TLS certificate analysis",
+        description="Check URL reputation across urlscan.io, VirusTotal, AbuseIPDB, Google Safe Browsing, TLS certificate analysis, and RDAP/WHOIS",
     )
     parser.add_argument("url", help="URL to check (e.g. https://example.com)")
     args = parser.parse_args()
