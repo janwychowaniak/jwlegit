@@ -7,6 +7,7 @@ from jwlegit.models import ServiceResult, Verdict
 # ANSI color codes
 _COLORS = {
     Verdict.CLEAN: "\033[32m",      # green
+    Verdict.CAUTION: "\033[37m",   # white
     Verdict.SUSPICIOUS: "\033[33m", # yellow
     Verdict.MALICIOUS: "\033[31m",  # red
     Verdict.ERROR: "\033[31m",      # red
@@ -78,7 +79,7 @@ def _print_service(result: ServiceResult, width: int) -> None:
 
 
 def _overall_verdict(results: list[ServiceResult]) -> Verdict:
-    priority = [Verdict.MALICIOUS, Verdict.SUSPICIOUS, Verdict.ERROR, Verdict.CLEAN]
+    priority = [Verdict.MALICIOUS, Verdict.SUSPICIOUS, Verdict.CAUTION, Verdict.ERROR, Verdict.CLEAN]
     verdicts = {r.verdict for r in results if r.verdict != Verdict.SKIPPED}
     for v in priority:
         if v in verdicts:

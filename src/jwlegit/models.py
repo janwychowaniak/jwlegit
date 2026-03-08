@@ -6,6 +6,7 @@ from enum import Enum
 
 class Verdict(Enum):
     CLEAN = "clean"
+    CAUTION = "caution"
     SUSPICIOUS = "suspicious"
     MALICIOUS = "malicious"
     ERROR = "error"

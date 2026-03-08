@@ -66,8 +66,10 @@ def _parse_result(ip: str, data: dict) -> ServiceResult:
 
     if confidence >= 50:
         verdict = Verdict.MALICIOUS
-    elif confidence > 0 or total_reports > 0:
+    elif confidence > 0:
         verdict = Verdict.SUSPICIOUS
+    elif total_reports > 0:
+        verdict = Verdict.CAUTION
     else:
         verdict = Verdict.CLEAN
 
