@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sys
 from urllib.parse import urlparse
 
 import httpx
@@ -40,6 +41,8 @@ async def check_ssllabs(url: str) -> ServiceResult:
     except httpx.HTTPStatusError as e:
         body = e.response.text[:200] if e.response else ""
         msg = f"{e}" if not body else f"{e.response.status_code}: {body}"
+        if "not yet registered" in body.lower() or "register" in body.lower():
+            msg += " (Hint: register at https://www.ssllabs.com/ssltest/ and verify your email, then set QUALYS_API_SECRET to that email)"
         return ServiceResult(
             service_name="SSL Labs",
             verdict=Verdict.ERROR,
@@ -69,7 +72,12 @@ async def _analyze(
 
     # Lazy auto-registration: if we get a 400/401/403, register and retry once
     if resp.status_code in (400, 401, 403) and not register_attempted:
-        await _register(client, email)
+        print(f"  [SSL Labs] Email not registered, attempting registration...", file=sys.stderr)
+        reg_ok = await _register(client, email)
+        if reg_ok:
+            print(f"  [SSL Labs] Registration submitted, retrying analysis...", file=sys.stderr)
+        else:
+            print(f"  [SSL Labs] Registration failed, retrying analysis anyway...", file=sys.stderr)
         return await _analyze(
             client, hostname, email, register_attempted=True
         )
@@ -107,13 +115,22 @@ async def _analyze(
     return _parse_result(hostname, data)
 
 
-async def _register(client: httpx.AsyncClient, email: str) -> None:
-    resp = await client.post(
-        API_REGISTER,
-        json={"firstName": "jwlegit", "lastName": "user", "email": email, "organization": "-"},
-    )
-    # Ignore errors — registration may already exist or require email verification.
-    # The subsequent analyze call will surface the real error if auth still fails.
+async def _register(client: httpx.AsyncClient, email: str) -> bool:
+    """Attempt to register email with SSL Labs. Returns True if successful."""
+    try:
+        resp = await client.post(
+            API_REGISTER,
+            json={"firstName": "jwlegit", "lastName": "user", "email": email, "organization": "-"},
+        )
+        if resp.is_success:
+            print(f"  [SSL Labs] Registration successful. You may need to verify your email before the API works.", file=sys.stderr)
+            return True
+        else:
+            print(f"  [SSL Labs] Registration returned {resp.status_code}: {resp.text[:200]}", file=sys.stderr)
+            return False
+    except Exception as e:
+        print(f"  [SSL Labs] Registration error: {e}", file=sys.stderr)
+        return False
 
 
 def _parse_result(hostname: str, data: dict) -> ServiceResult:
