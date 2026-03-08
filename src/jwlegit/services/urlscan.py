@@ -16,12 +16,12 @@ TIMEOUT = 60
 
 
 async def check_urlscan(url: str) -> ServiceResult:
-    api_key = os.environ.get("URLSCAN_API_SECRET")
+    api_key = os.environ.get("URLSCAN_API_KEY")
     if not api_key:
         return ServiceResult(
             service_name="urlscan.io",
             verdict=Verdict.SKIPPED,
-            error="URLSCAN_API_SECRET not set",
+            error="URLSCAN_API_KEY not set",
         )
 
     try:

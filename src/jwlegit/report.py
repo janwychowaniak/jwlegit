@@ -59,14 +59,22 @@ def _print_service(result: ServiceResult, width: int) -> None:
     header = f"  {result.service_name}: {verdict_str}"
     print(_c(header, result.verdict))
 
+    # Collect all key-value pairs for aligned output
+    pairs: list[tuple[str, str]] = []
+
     if result.error:
-        print(f"    Error: {result.error}")
+        pairs.append(("Error", result.error))
 
     for key, value in result.details.items():
-        print(f"    {key}: {value}")
+        pairs.append((key, value))
 
     if result.link:
-        print(f"    Link: {result.link}")
+        pairs.append(("Link", result.link))
+
+    if pairs:
+        max_key = max(len(k) for k, _ in pairs)
+        for key, value in pairs:
+            print(f"    {key + ':':<{max_key + 1}} {value}")
 
 
 def _overall_verdict(results: list[ServiceResult]) -> Verdict:

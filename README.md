@@ -1,6 +1,6 @@
 # jwlegit
 
-URL reputation checker — queries urlscan.io, VirusTotal, and SSL Labs in parallel and presents a combined report.
+URL reputation checker — queries urlscan.io, VirusTotal, AbuseIPDB, Google Safe Browsing, and performs TLS certificate analysis in parallel, presenting a combined report.
 
 ## Installation
 
@@ -13,12 +13,14 @@ uv pip install -e .
 Set API credentials as environment variables:
 
 ```bash
-export URLSCAN_API_SECRET="your-urlscan-api-key"
-export VIRUSTOTAL_API_SECRET="your-virustotal-api-key"
-export QUALYS_API_SECRET="your-email@example.com"   # registered email for SSL Labs
+export URLSCAN_API_KEY="your-urlscan-api-key"
+export VIRUSTOTAL_API_KEY="your-virustotal-api-key"
+export ABUSEIPDB_API_KEY="your-abuseipdb-api-key"
+export GOOGLE_SAFEBROWSING_API_KEY="your-google-api-key"
 ```
 
 Missing credentials will cause that service to be skipped (not crash).
+The TLS certificate check requires no API key.
 
 ## Usage
 
