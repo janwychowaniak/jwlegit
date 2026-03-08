@@ -19,10 +19,18 @@ async def check_rdap(url: str) -> ServiceResult:
             error="Could not extract hostname from URL",
         )
 
-    # Strip leading "www." to get the registrable domain
+    # Extract the registrable domain (last two labels, or three for
+    # two-letter SLD like .co.uk).  This is a simple heuristic that
+    # covers the vast majority of cases without a PSL dependency.
     domain = hostname.lower()
-    if domain.startswith("www."):
-        domain = domain[4:]
+    parts = domain.split(".")
+    if len(parts) > 2:
+        # Heuristic: if the second-level label is <= 3 chars (e.g. co, com,
+        # org, net in co.uk, com.au) keep three labels, otherwise two.
+        if len(parts[-2]) <= 3 and len(parts) >= 3:
+            domain = ".".join(parts[-3:])
+        else:
+            domain = ".".join(parts[-2:])
 
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
@@ -34,7 +42,7 @@ async def check_rdap(url: str) -> ServiceResult:
         if e.response.status_code == 404:
             return ServiceResult(
                 service_name="RDAP / WHOIS",
-                verdict=Verdict.ERROR,
+                verdict=Verdict.SKIPPED,
                 error=f"No RDAP record found for {domain}",
             )
         return ServiceResult(
