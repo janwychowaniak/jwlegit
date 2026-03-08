@@ -1,6 +1,6 @@
 # jwlegit
 
-URL reputation checker — queries urlscan.io, VirusTotal, and performs TLS certificate analysis in parallel, presenting a combined report.
+URL reputation checker — queries urlscan.io, VirusTotal, AbuseIPDB, Google Safe Browsing, and performs TLS certificate analysis in parallel, presenting a combined report.
 
 ## Installation
 
@@ -15,6 +15,8 @@ Set API credentials as environment variables:
 ```bash
 export URLSCAN_API_SECRET="your-urlscan-api-key"
 export VIRUSTOTAL_API_SECRET="your-virustotal-api-key"
+export ABUSEIPDB_API_SECRET="your-abuseipdb-api-key"
+export GOOGLE_SAFEBROWSING_API_SECRET="your-google-api-key"
 ```
 
 Missing credentials will cause that service to be skipped (not crash).
