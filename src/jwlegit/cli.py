@@ -9,7 +9,7 @@ from jwlegit.models import ServiceResult
 from jwlegit.report import print_report
 from jwlegit.services.urlscan import check_urlscan
 from jwlegit.services.virustotal import check_virustotal
-from jwlegit.services.ssllabs import check_ssllabs
+from jwlegit.services.ssllabs import check_tls
 
 
 def _validate_url(url: str) -> str:
@@ -27,7 +27,7 @@ async def _run(url: str) -> list[ServiceResult]:
     results = await asyncio.gather(
         check_urlscan(url),
         check_virustotal(url),
-        check_ssllabs(url),
+        check_tls(url),
     )
     return list(results)
 
@@ -35,7 +35,7 @@ async def _run(url: str) -> list[ServiceResult]:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="jwlegit",
-        description="Check URL reputation across urlscan.io, VirusTotal, and SSL Labs",
+        description="Check URL reputation across urlscan.io, VirusTotal, and TLS certificate analysis",
     )
     parser.add_argument("url", help="URL to check (e.g. https://example.com)")
     args = parser.parse_args()
