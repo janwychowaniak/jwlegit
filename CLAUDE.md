@@ -8,9 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 uv pip install -e .              # install (editable)
 uv run jwlegit <url>             # run without installing
 jwlegit <url>                    # run after install
+uv run --group dev pytest        # full test suite
+uv run --group dev pytest tests/test_rdap.py::test_registrable_domain  # single test
 ```
 
-No test suite, linter, or formatter is configured.
+No linter or formatter is configured. Tests live under `tests/` and cover both the pure helpers (`_parse_result`, `_overall_verdict`, `_registrable_domain`, `_validate_url`) and the `check_*` coroutines end-to-end via `respx` (httpx route mocking). Polling-loop tests use the `fast_sleep` fixture in `tests/conftest.py` to monkeypatch `asyncio.sleep`. AbuseIPDB tests stub `socket.gethostbyname` and TLS tests stub `_get_cert_info` to avoid real network/SSL traffic.
 
 ## Architecture
 

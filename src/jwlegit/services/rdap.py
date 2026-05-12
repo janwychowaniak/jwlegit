@@ -10,6 +10,20 @@ from jwlegit.models import ServiceResult, Verdict
 RDAP_BOOTSTRAP = "https://rdap.org/domain/{domain}"
 
 
+def _registrable_domain(hostname: str) -> str:
+    """Extract the registrable domain (last two labels, or three for a
+    two-letter SLD like .co.uk).  Simple heuristic without a PSL dependency:
+    if the second-level label is <= 3 chars (co, com, org, net in co.uk,
+    com.au) keep three labels, otherwise two.
+    """
+    parts = hostname.lower().split(".")
+    if len(parts) > 2 and len(parts[-2]) <= 3:
+        return ".".join(parts[-3:])
+    if len(parts) >= 2:
+        return ".".join(parts[-2:])
+    return hostname.lower()
+
+
 async def check_rdap(url: str) -> ServiceResult:
     hostname = urlparse(url).hostname
     if not hostname:
@@ -19,18 +33,7 @@ async def check_rdap(url: str) -> ServiceResult:
             error="Could not extract hostname from URL",
         )
 
-    # Extract the registrable domain (last two labels, or three for
-    # two-letter SLD like .co.uk).  This is a simple heuristic that
-    # covers the vast majority of cases without a PSL dependency.
-    domain = hostname.lower()
-    parts = domain.split(".")
-    if len(parts) > 2:
-        # Heuristic: if the second-level label is <= 3 chars (e.g. co, com,
-        # org, net in co.uk, com.au) keep three labels, otherwise two.
-        if len(parts[-2]) <= 3 and len(parts) >= 3:
-            domain = ".".join(parts[-3:])
-        else:
-            domain = ".".join(parts[-2:])
+    domain = _registrable_domain(hostname)
 
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
