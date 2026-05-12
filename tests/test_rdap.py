@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
@@ -9,11 +9,11 @@ import respx
 from jwlegit.models import Verdict
 from jwlegit.services.rdap import (
     RDAP_BOOTSTRAP,
-    check_rdap,
     _format_age,
     _parse_date,
     _parse_result,
     _registrable_domain,
+    check_rdap,
 )
 
 
@@ -40,7 +40,7 @@ def test_registrable_domain(hostname, expected):
 
 
 def test_parse_date_handles_z_suffix():
-    assert _parse_date("2024-01-02T03:04:05Z") == datetime(2024, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
+    assert _parse_date("2024-01-02T03:04:05Z") == datetime(2024, 1, 2, 3, 4, 5, tzinfo=UTC)
 
 
 def test_parse_date_returns_none_on_garbage():
@@ -65,17 +65,23 @@ def test_format_age(days, expected):
 
 def _events(created_offset_days: int | None = None, **extra):
     events = []
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if created_offset_days is not None:
-        events.append({
-            "eventAction": "registration",
-            "eventDate": (now - timedelta(days=-created_offset_days)).isoformat().replace("+00:00", "Z"),
-        })
+        events.append(
+            {
+                "eventAction": "registration",
+                "eventDate": (now - timedelta(days=-created_offset_days))
+                .isoformat()
+                .replace("+00:00", "Z"),
+            }
+        )
     for action, offset in extra.items():
-        events.append({
-            "eventAction": action.replace("_", " "),
-            "eventDate": (now - timedelta(days=-offset)).isoformat().replace("+00:00", "Z"),
-        })
+        events.append(
+            {
+                "eventAction": action.replace("_", " "),
+                "eventDate": (now - timedelta(days=-offset)).isoformat().replace("+00:00", "Z"),
+            }
+        )
     return {"events": events}
 
 
@@ -111,10 +117,13 @@ def test_registrar_extracted_from_vcard():
         "entities": [
             {
                 "roles": ["registrar"],
-                "vcardArray": ["vcard", [
-                    ["version", {}, "text", "4.0"],
-                    ["fn", {}, "text", "Acme Registrar LLC"],
-                ]],
+                "vcardArray": [
+                    "vcard",
+                    [
+                        ["version", {}, "text", "4.0"],
+                        ["fn", {}, "text", "Acme Registrar LLC"],
+                    ],
+                ],
             },
         ],
     }
@@ -138,9 +147,7 @@ async def test_check_rdap_extracts_registrable_domain_from_subdomain():
 
 @respx.mock
 async def test_check_rdap_404_is_skipped():
-    respx.get(RDAP_BOOTSTRAP.format(domain="example.com")).mock(
-        return_value=httpx.Response(404)
-    )
+    respx.get(RDAP_BOOTSTRAP.format(domain="example.com")).mock(return_value=httpx.Response(404))
     r = await check_rdap("https://example.com")
     assert r.verdict == Verdict.SKIPPED
     assert "No RDAP record" in r.error
@@ -148,8 +155,6 @@ async def test_check_rdap_404_is_skipped():
 
 @respx.mock
 async def test_check_rdap_other_http_error_is_error():
-    respx.get(RDAP_BOOTSTRAP.format(domain="example.com")).mock(
-        return_value=httpx.Response(500)
-    )
+    respx.get(RDAP_BOOTSTRAP.format(domain="example.com")).mock(return_value=httpx.Response(500))
     r = await check_rdap("https://example.com")
     assert r.verdict == Verdict.ERROR

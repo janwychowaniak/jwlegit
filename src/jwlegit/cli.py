@@ -7,18 +7,20 @@ from urllib.parse import urlparse
 
 from jwlegit.models import ServiceResult
 from jwlegit.report import print_report
+from jwlegit.services.abuseipdb import check_abuseipdb
+from jwlegit.services.pythontls import check_tls
+from jwlegit.services.rdap import check_rdap
+from jwlegit.services.safebrowsing import check_safebrowsing
 from jwlegit.services.urlscan import check_urlscan
 from jwlegit.services.virustotal import check_virustotal
-from jwlegit.services.pythontls import check_tls
-from jwlegit.services.abuseipdb import check_abuseipdb
-from jwlegit.services.safebrowsing import check_safebrowsing
-from jwlegit.services.rdap import check_rdap
 
 
 def _validate_url(url: str) -> str:
     parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
-        print(f"Error: Invalid URL scheme '{parsed.scheme}'. Use http:// or https://", file=sys.stderr)
+        print(
+            f"Error: Invalid URL scheme '{parsed.scheme}'. Use http:// or https://", file=sys.stderr
+        )
         sys.exit(1)
     if not parsed.hostname:
         print("Error: URL must include a hostname", file=sys.stderr)
@@ -41,7 +43,10 @@ async def _run(url: str) -> list[ServiceResult]:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="jwlegit",
-        description="Check URL reputation across urlscan.io, VirusTotal, AbuseIPDB, Google Safe Browsing, TLS certificate analysis, and RDAP/WHOIS",
+        description=(
+            "Check URL reputation across urlscan.io, VirusTotal, AbuseIPDB, "
+            "Google Safe Browsing, TLS certificate analysis, and RDAP/WHOIS"
+        ),
     )
     parser.add_argument("url", help="URL to check (e.g. https://example.com)")
     args = parser.parse_args()

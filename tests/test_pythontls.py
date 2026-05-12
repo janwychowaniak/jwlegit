@@ -7,7 +7,9 @@ from jwlegit.services.pythontls import _parse_result
 
 
 def _cert_date(offset_days: int) -> str:
-    d = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + datetime.timedelta(days=offset_days)
+    d = datetime.datetime.now(datetime.UTC).replace(tzinfo=None) + datetime.timedelta(
+        days=offset_days
+    )
     return d.strftime("%b %d %H:%M:%S %Y GMT")
 
 
@@ -65,12 +67,14 @@ def test_many_sans_get_truncated():
 
 async def test_check_tls_missing_hostname():
     from jwlegit.services.pythontls import check_tls
+
     r = await check_tls("not-a-url")
     assert r.verdict == Verdict.ERROR
 
 
 async def test_check_tls_happy_path(monkeypatch):
     from jwlegit.services import pythontls
+
     monkeypatch.setattr(pythontls, "_get_cert_info", lambda host: _info(120))
     r = await pythontls.check_tls("https://example.com")
     assert r.verdict == Verdict.CLEAN
@@ -79,8 +83,10 @@ async def test_check_tls_happy_path(monkeypatch):
 
 async def test_check_tls_socket_error_is_caught(monkeypatch):
     from jwlegit.services import pythontls
+
     def boom(host):
         raise ConnectionRefusedError("nope")
+
     monkeypatch.setattr(pythontls, "_get_cert_info", boom)
     r = await pythontls.check_tls("https://example.com")
     assert r.verdict == Verdict.ERROR

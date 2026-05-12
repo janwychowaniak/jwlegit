@@ -62,7 +62,6 @@ def _parse_result(ip: str, data: dict) -> ServiceResult:
     country = data.get("countryCode", "")
     isp = data.get("isp", "")
     domain = data.get("domain", "")
-    is_public = data.get("isPublic", True)
 
     if confidence >= 50:
         verdict = Verdict.MALICIOUS

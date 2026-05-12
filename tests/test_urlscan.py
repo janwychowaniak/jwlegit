@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import httpx
-import pytest
 import respx
 
 from jwlegit.models import Verdict
 from jwlegit.services.urlscan import (
     API_RESULT,
     API_SUBMIT,
-    check_urlscan,
     _parse_result,
+    check_urlscan,
 )
-
 
 UUID = "abc-123"
 URL = "https://example.com"
@@ -69,11 +67,13 @@ async def test_check_urlscan_skipped_without_api_key(monkeypatch):
 async def test_check_urlscan_polls_until_result_ready(monkeypatch, fast_sleep):
     monkeypatch.setenv("URLSCAN_API_KEY", "k")
     respx.post(API_SUBMIT).mock(return_value=httpx.Response(200, json={"uuid": UUID}))
-    respx.get(API_RESULT.format(uuid=UUID)).mock(side_effect=[
-        httpx.Response(404),
-        httpx.Response(404),
-        httpx.Response(200, json={"verdicts": {"overall": {"score": 10, "malicious": True}}}),
-    ])
+    respx.get(API_RESULT.format(uuid=UUID)).mock(
+        side_effect=[
+            httpx.Response(404),
+            httpx.Response(404),
+            httpx.Response(200, json={"verdicts": {"overall": {"score": 10, "malicious": True}}}),
+        ]
+    )
 
     r = await check_urlscan(URL)
     assert r.verdict == Verdict.MALICIOUS

@@ -6,12 +6,12 @@ from jwlegit.models import ServiceResult, Verdict
 
 # ANSI color codes
 _COLORS = {
-    Verdict.CLEAN: "\033[32m",      # green
-    Verdict.CAUTION: "\033[37m",   # white
-    Verdict.SUSPICIOUS: "\033[33m", # yellow
+    Verdict.CLEAN: "\033[32m",  # green
+    Verdict.CAUTION: "\033[37m",  # white
+    Verdict.SUSPICIOUS: "\033[33m",  # yellow
     Verdict.MALICIOUS: "\033[31m",  # red
-    Verdict.ERROR: "\033[31m",      # red
-    Verdict.SKIPPED: "\033[90m",    # gray
+    Verdict.ERROR: "\033[31m",  # red
+    Verdict.SKIPPED: "\033[90m",  # gray
 }
 _RESET = "\033[0m"
 _BOLD = "\033[1m"
@@ -38,7 +38,7 @@ def print_report(url: str, results: list[ServiceResult]) -> None:
 
     print()
     print(f"{'═' * width}")
-    print(_bold(f"  jwlegit — URL Reputation Report"))
+    print(_bold("  jwlegit — URL Reputation Report"))
     print(f"  Target: {url}")
     print(f"{'═' * width}")
 
@@ -79,7 +79,13 @@ def _print_service(result: ServiceResult, width: int) -> None:
 
 
 def _overall_verdict(results: list[ServiceResult]) -> Verdict:
-    priority = [Verdict.MALICIOUS, Verdict.SUSPICIOUS, Verdict.CAUTION, Verdict.ERROR, Verdict.CLEAN]
+    priority = [
+        Verdict.MALICIOUS,
+        Verdict.SUSPICIOUS,
+        Verdict.CAUTION,
+        Verdict.ERROR,
+        Verdict.CLEAN,
+    ]
     verdicts = {r.verdict for r in results if r.verdict != Verdict.SKIPPED}
     for v in priority:
         if v in verdicts:

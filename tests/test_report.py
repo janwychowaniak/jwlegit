@@ -32,10 +32,7 @@ def test_skipped_is_excluded():
     # SKIPPED does not raise the verdict above other signals.
     assert _overall_verdict([_r(Verdict.SKIPPED), _r(Verdict.CLEAN)]) == Verdict.CLEAN
     # SKIPPED does not suppress MALICIOUS.
-    assert (
-        _overall_verdict([_r(Verdict.SKIPPED), _r(Verdict.MALICIOUS)])
-        == Verdict.MALICIOUS
-    )
+    assert _overall_verdict([_r(Verdict.SKIPPED), _r(Verdict.MALICIOUS)]) == Verdict.MALICIOUS
 
 
 def test_empty_input():

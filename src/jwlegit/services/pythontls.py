@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import ssl
 import socket
+import ssl
 from urllib.parse import urlparse
 
 from jwlegit.models import ServiceResult, Verdict
@@ -33,16 +33,18 @@ async def check_tls(url: str) -> ServiceResult:
 
 def _get_cert_info(hostname: str) -> dict:
     ctx = ssl.create_default_context()
-    with socket.create_connection((hostname, DEFAULT_PORT), timeout=10) as sock:
-        with ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
-            cert = ssock.getpeercert()
-            protocol = ssock.version()
-            cipher = ssock.cipher()
-            return {
-                "cert": cert,
-                "protocol": protocol,
-                "cipher": cipher,
-            }
+    with (
+        socket.create_connection((hostname, DEFAULT_PORT), timeout=10) as sock,
+        ctx.wrap_socket(sock, server_hostname=hostname) as ssock,
+    ):
+        cert = ssock.getpeercert()
+        protocol = ssock.version()
+        cipher = ssock.cipher()
+        return {
+            "cert": cert,
+            "protocol": protocol,
+            "cipher": cipher,
+        }
 
 
 def _parse_result(hostname: str, info: dict) -> ServiceResult:
@@ -63,21 +65,18 @@ def _parse_result(hostname: str, info: dict) -> ServiceResult:
     issuer_parts = []
     for rdn in cert.get("issuer", ()):
         for attr_type, attr_value in rdn:
-            if attr_type == "organizationName":
-                issuer_parts.append(attr_value)
-            elif attr_type == "commonName":
+            if attr_type in ("organizationName", "commonName"):
                 issuer_parts.append(attr_value)
     if issuer_parts:
         details["Issuer"] = " — ".join(issuer_parts)
 
     # Validity
-    not_before = cert.get("notBefore", "")
     not_after = cert.get("notAfter", "")
     if not_after:
         details["Valid until"] = not_after
         try:
             expiry = datetime.datetime.strptime(not_after, "%b %d %H:%M:%S %Y %Z")
-            now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+            now = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
             days_left = (expiry - now).days
             details["Days until expiry"] = str(days_left)
             if days_left < 0:

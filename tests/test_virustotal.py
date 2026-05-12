@@ -7,23 +7,26 @@ from jwlegit.models import Verdict
 from jwlegit.services.virustotal import (
     API_ANALYSIS,
     API_URLS,
-    check_virustotal,
     _gui_link,
     _parse_result,
+    check_virustotal,
 )
-
 
 URL = "https://example.com/"
 ANALYSIS_ID = "an-1"
 
 
 def _data(malicious=0, suspicious=0, harmless=0, undetected=0):
-    return {"attributes": {"stats": {
-        "malicious": malicious,
-        "suspicious": suspicious,
-        "harmless": harmless,
-        "undetected": undetected,
-    }}}
+    return {
+        "attributes": {
+            "stats": {
+                "malicious": malicious,
+                "suspicious": suspicious,
+                "harmless": harmless,
+                "undetected": undetected,
+            }
+        }
+    }
 
 
 def test_any_malicious_is_malicious():
@@ -63,13 +66,25 @@ async def test_check_virustotal_polls_until_completed(monkeypatch, fast_sleep):
     monkeypatch.setenv("VIRUSTOTAL_API_KEY", "k")
     respx.post(API_URLS).mock(return_value=httpx.Response(200, json={"data": {"id": ANALYSIS_ID}}))
     queued = {"data": {"attributes": {"status": "queued", "stats": {}}}}
-    completed = {"data": {"attributes": {"status": "completed", "stats": {
-        "malicious": 2, "suspicious": 0, "harmless": 60, "undetected": 8,
-    }}}}
-    respx.get(API_ANALYSIS.format(id=ANALYSIS_ID)).mock(side_effect=[
-        httpx.Response(200, json=queued),
-        httpx.Response(200, json=completed),
-    ])
+    completed = {
+        "data": {
+            "attributes": {
+                "status": "completed",
+                "stats": {
+                    "malicious": 2,
+                    "suspicious": 0,
+                    "harmless": 60,
+                    "undetected": 8,
+                },
+            }
+        }
+    }
+    respx.get(API_ANALYSIS.format(id=ANALYSIS_ID)).mock(
+        side_effect=[
+            httpx.Response(200, json=queued),
+            httpx.Response(200, json=completed),
+        ]
+    )
 
     r = await check_virustotal(URL)
     assert r.verdict == Verdict.MALICIOUS
@@ -82,9 +97,11 @@ async def test_check_virustotal_times_out(monkeypatch, fast_sleep):
     monkeypatch.setattr("jwlegit.services.virustotal.TIMEOUT", 10)
     monkeypatch.setattr("jwlegit.services.virustotal.POLL_INTERVAL", 5)
     respx.post(API_URLS).mock(return_value=httpx.Response(200, json={"data": {"id": ANALYSIS_ID}}))
-    respx.get(API_ANALYSIS.format(id=ANALYSIS_ID)).mock(return_value=httpx.Response(
-        200, json={"data": {"attributes": {"status": "queued", "stats": {}}}}
-    ))
+    respx.get(API_ANALYSIS.format(id=ANALYSIS_ID)).mock(
+        return_value=httpx.Response(
+            200, json={"data": {"attributes": {"status": "queued", "stats": {}}}}
+        )
+    )
 
     r = await check_virustotal(URL)
     assert r.verdict == Verdict.ERROR

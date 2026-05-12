@@ -4,8 +4,7 @@ import httpx
 import respx
 
 from jwlegit.models import Verdict
-from jwlegit.services.safebrowsing import API_LOOKUP, check_safebrowsing, _parse_result
-
+from jwlegit.services.safebrowsing import API_LOOKUP, _parse_result, check_safebrowsing
 
 URL = "https://example.com"
 
@@ -17,11 +16,13 @@ def test_no_matches_is_clean():
 
 
 def test_matches_are_malicious_and_deduplicated_and_sorted():
-    data = {"matches": [
-        {"threatType": "MALWARE", "platformType": "WINDOWS"},
-        {"threatType": "MALWARE", "platformType": "LINUX"},
-        {"threatType": "SOCIAL_ENGINEERING", "platformType": "WINDOWS"},
-    ]}
+    data = {
+        "matches": [
+            {"threatType": "MALWARE", "platformType": "WINDOWS"},
+            {"threatType": "MALWARE", "platformType": "LINUX"},
+            {"threatType": "SOCIAL_ENGINEERING", "platformType": "WINDOWS"},
+        ]
+    }
     r = _parse_result(data)
     assert r.verdict == Verdict.MALICIOUS
     assert r.details["Threats found"] == "3"
@@ -56,9 +57,16 @@ async def test_check_safebrowsing_clean(monkeypatch):
 @respx.mock
 async def test_check_safebrowsing_malicious(monkeypatch):
     monkeypatch.setenv("GOOGLE_SAFEBROWSING_API_KEY", "k")
-    respx.post(API_LOOKUP).mock(return_value=httpx.Response(200, json={"matches": [
-        {"threatType": "MALWARE", "platformType": "ANY_PLATFORM"},
-    ]}))
+    respx.post(API_LOOKUP).mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "matches": [
+                    {"threatType": "MALWARE", "platformType": "ANY_PLATFORM"},
+                ]
+            },
+        )
+    )
     r = await check_safebrowsing(URL)
     assert r.verdict == Verdict.MALICIOUS
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from urllib.parse import urlparse
 
 import httpx
@@ -70,7 +70,7 @@ def _parse_result(domain: str, data: dict) -> ServiceResult:
 
     details: dict[str, str] = {"Domain": domain}
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     domain_age_days: int | None = None
 
     if created_str:
@@ -126,16 +126,19 @@ def _parse_date(date_str: str) -> datetime | None:
         return None
 
 
+def _plural(n: int, unit: str) -> str:
+    return f"{n} {unit}{'' if n == 1 else 's'}"
+
+
 def _format_age(days: int) -> str:
     if days < 1:
         return "less than a day"
     if days < 30:
         return f"{days} days"
     if days < 365:
-        months = days // 30
-        return f"~{months} month{'s' if months != 1 else ''}"
+        return f"~{_plural(days // 30, 'month')}"
     years = days // 365
     remainder_months = (days % 365) // 30
     if remainder_months:
-        return f"~{years} year{'s' if years != 1 else ''}, {remainder_months} month{'s' if remainder_months != 1 else ''}"
-    return f"~{years} year{'s' if years != 1 else ''}"
+        return f"~{_plural(years, 'year')}, {_plural(remainder_months, 'month')}"
+    return f"~{_plural(years, 'year')}"

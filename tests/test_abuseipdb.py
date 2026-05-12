@@ -6,8 +6,7 @@ import httpx
 import respx
 
 from jwlegit.models import Verdict
-from jwlegit.services.abuseipdb import API_CHECK, check_abuseipdb, _parse_result
-
+from jwlegit.services.abuseipdb import API_CHECK, _parse_result, check_abuseipdb
 
 IP = "1.2.3.4"
 URL = "https://example.com"
@@ -44,7 +43,9 @@ def test_optional_fields_only_present_when_set():
     assert "Country" not in r.details
     assert "ISP" not in r.details
     assert "Domain" not in r.details
-    r2 = _parse_result(IP, _data(confidence=0, reports=0, countryCode="US", isp="X", domain="x.test"))
+    r2 = _parse_result(
+        IP, _data(confidence=0, reports=0, countryCode="US", isp="X", domain="x.test")
+    )
     assert r2.details["Country"] == "US"
     assert r2.details["ISP"] == "X"
     assert r2.details["Domain"] == "x.test"
@@ -62,8 +63,10 @@ async def test_check_abuseipdb_skipped_without_api_key(monkeypatch):
 
 async def test_check_abuseipdb_dns_failure_is_error(monkeypatch):
     monkeypatch.setenv("ABUSEIPDB_API_KEY", "k")
+
     def fail(host):
         raise socket.gaierror("Name or service not known")
+
     monkeypatch.setattr("jwlegit.services.abuseipdb.socket.gethostbyname", fail)
     r = await check_abuseipdb(URL)
     assert r.verdict == Verdict.ERROR
@@ -74,14 +77,21 @@ async def test_check_abuseipdb_dns_failure_is_error(monkeypatch):
 async def test_check_abuseipdb_high_confidence_is_malicious(monkeypatch):
     monkeypatch.setenv("ABUSEIPDB_API_KEY", "k")
     monkeypatch.setattr("jwlegit.services.abuseipdb.socket.gethostbyname", lambda h: IP)
-    respx.get(API_CHECK).mock(return_value=httpx.Response(200, json={"data": {
-        "abuseConfidencePercentage": 88,
-        "totalReports": 42,
-        "countryCode": "US",
-        "isp": "Example ISP",
-        "domain": "example.com",
-        "isPublic": True,
-    }}))
+    respx.get(API_CHECK).mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "data": {
+                    "abuseConfidencePercentage": 88,
+                    "totalReports": 42,
+                    "countryCode": "US",
+                    "isp": "Example ISP",
+                    "domain": "example.com",
+                    "isPublic": True,
+                }
+            },
+        )
+    )
 
     r = await check_abuseipdb(URL)
     assert r.verdict == Verdict.MALICIOUS
