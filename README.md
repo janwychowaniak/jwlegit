@@ -1,12 +1,20 @@
 # jwlegit
 
-URL reputation checker — queries urlscan.io, VirusTotal, AbuseIPDB, Google Safe Browsing, and performs TLS certificate analysis in parallel, presenting a combined report.
+URL reputation checker — queries urlscan.io, VirusTotal, AbuseIPDB, Google Safe Browsing, RDAP/WHOIS, and TLS certificate analysis in parallel, presenting a combined report.
 
 ## Installation
 
 ```bash
-uv pip install -e .
+uv tool install jwlegit
 ```
+
+Or with [pipx](https://pipx.pypa.io/) if you don't use [uv](https://docs.astral.sh/uv/):
+
+```bash
+pipx install jwlegit
+```
+
+Both put the `jwlegit` script on your `PATH` inside an isolated environment, which is the right pattern for a CLI tool.
 
 ## Configuration
 
@@ -29,8 +37,11 @@ Set them however you prefer. Missing credentials cause that service to be skippe
 jwlegit https://example.com
 ```
 
-Or without installing:
+## Development
 
 ```bash
-uv run jwlegit https://example.com
+git clone https://github.com/janwychowaniak/jwlegit
+cd jwlegit
+uv sync --group dev
+uv run pytest
 ```
