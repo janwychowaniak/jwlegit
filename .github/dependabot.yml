@@ -1,0 +1,48 @@
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
+      semver-minor-days: 14
+      semver-patch-days: 7
+      include:
+        - "*"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+    labels:
+      - dependencies
+      - python
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
+      semver-minor-days: 14
+      semver-patch-days: 7
+      include:
+        - "*"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+    labels:
+      - dependencies
+      - github-actions
