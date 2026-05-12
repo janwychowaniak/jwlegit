@@ -10,17 +10,18 @@ uv pip install -e .
 
 ## Configuration
 
-Set API credentials as environment variables:
+This tool reads the following environment variables:
 
-```bash
-export URLSCAN_API_KEY="your-urlscan-api-key"
-export VIRUSTOTAL_API_KEY="your-virustotal-api-key"
-export ABUSEIPDB_API_KEY="your-abuseipdb-api-key"
-export GOOGLE_SAFEBROWSING_API_KEY="your-google-api-key"
-```
+| Variable                      | Service              | Notes                            |
+|-------------------------------|----------------------|----------------------------------|
+| `URLSCAN_API_KEY`             | urlscan.io           | Submits a scan and polls         |
+| `VIRUSTOTAL_API_KEY`          | VirusTotal           | Submits URL and polls analysis   |
+| `ABUSEIPDB_API_KEY`           | AbuseIPDB            | Checks the resolved IP, not URL  |
+| `GOOGLE_SAFEBROWSING_API_KEY` | Google Safe Browsing | Single lookup                    |
+| —                             | TLS Certificate      | No key required                  |
+| —                             | RDAP / WHOIS         | No key required                  |
 
-Missing credentials will cause that service to be skipped (not crash).
-The TLS certificate check requires no API key.
+Set them however you prefer. Missing credentials cause that service to be skipped — the tool won't crash.
 
 ## Usage
 
