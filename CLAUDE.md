@@ -47,6 +47,10 @@ Cutting a release:
 
 Dependabot (`.github/dependabot.yml`) tracks `pip` and `github-actions` weekly with conservative cooldown windows (30d major / 14d minor / 7d patch) as a supply-chain defense. CVE-driven security updates bypass cooldown. Dependabot PRs go through the same CI gates as any other PR.
 
+## Secret scanning
+
+Gitleaks guards four channels: staged file content (`.githooks/pre-commit`), the commit message body (`.githooks/commit-msg`), the whole pushed range — content and messages (`.githooks/pre-push`), and CI (`.github/workflows/gitleaks.yml`, which also re-audits full history weekly). Local hooks are advisory (`--no-verify` skips them); the CI scan is the non-bypassable layer. One `.gitleaks.toml` feeds all four: the full built-in ruleset plus anchored `jw-*` rules for the credential formats this project touches — Anthropic keys are invisible to the default ruleset, so never drop `jw-anthropic-key`. Hooks activate **once per clone**: `git config core.hooksPath .githooks`. Any scan whose `--source` is a single file (commit messages) needs `--config .gitleaks.toml` passed explicitly — config autodetection only resolves for directory sources.
+
 ## Architecture
 
 `cli.py` is a thin orchestrator: validate URL → `asyncio.gather` every `check_*` coroutine → hand the resulting list to `report.print_report`. All services run concurrently; one slow service doesn't block the others.
