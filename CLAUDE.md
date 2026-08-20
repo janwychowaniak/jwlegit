@@ -26,7 +26,7 @@ A branch ruleset (`protect-main`) rejects direct pushes that don't carry passing
 
 1. Topic branch, push.
 2. `gh pr create --base main` — opens a PR, which fires `.github/workflows/ci.yml`.
-3. Five required checks must pass: `lint`, `audit`, `test (3.11)`, `test (3.12)`, `test (3.13)`. Lint runs `ruff check`, `ruff format --check`, and `mypy`. Audit runs `pip-audit` against the runtime-only dep export.
+3. Six required checks must pass: `lint`, `audit`, `scan`, `test (3.11)`, `test (3.12)`, `test (3.13)`. Lint runs `ruff check`, `ruff format --check`, and `mypy`. Audit runs `pip-audit` against the runtime-only dep export. Scan is the gitleaks CI layer.
 4. `gh pr merge <#> --rebase --delete-branch` once green.
 
 `main` cannot be force-pushed or deleted.
