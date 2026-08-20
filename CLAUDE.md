@@ -7,12 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 uv sync --group dev              # install runtime + dev deps from uv.lock
 uv run jwlegit <url>             # run the CLI from source
-uv run pytest                    # full test suite (84 tests, ~1s)
+uv run pytest                    # full test suite (85 tests, ~1s)
 uv run pytest tests/test_rdap.py::test_registrable_domain   # single test
 uv run ruff check .              # lint
 uv run ruff format .             # format
 uv run mypy                      # type-check
 uv build                         # produce sdist + wheel in dist/
+uv tool install --reinstall .    # reinstall the CLI system-wide from local source
 ```
 
 The published CLI for end users installs via `uv tool install jwlegit` or `pipx install jwlegit` — both put `jwlegit` on PATH in an isolated venv (the correct pattern for a CLI). The `uv sync --group dev` workflow above is for development on this repo.
