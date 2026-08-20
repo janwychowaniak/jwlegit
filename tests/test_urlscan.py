@@ -81,6 +81,20 @@ async def test_check_urlscan_polls_until_result_ready(monkeypatch, fast_sleep):
 
 
 @respx.mock
+async def test_check_urlscan_poll_sends_api_key(monkeypatch, fast_sleep):
+    # Since 2026-05-04 the result endpoint rejects unauthenticated requests
+    # with 403 (regression: key was sent on submit only, not on polls).
+    monkeypatch.setenv("URLSCAN_API_KEY", "k")
+    respx.post(API_SUBMIT).mock(return_value=httpx.Response(200, json={"uuid": UUID}))
+    poll_route = respx.get(API_RESULT.format(uuid=UUID)).mock(
+        return_value=httpx.Response(200, json={"verdicts": {}})
+    )
+
+    await check_urlscan(URL)
+    assert poll_route.calls.last.request.headers["API-Key"] == "k"
+
+
+@respx.mock
 async def test_check_urlscan_times_out(monkeypatch, fast_sleep):
     monkeypatch.setenv("URLSCAN_API_KEY", "k")
     monkeypatch.setattr("jwlegit.services.urlscan.TIMEOUT", 10)

@@ -25,12 +25,14 @@ async def check_urlscan(url: str) -> ServiceResult:
         )
 
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
+        # The API key must be on every request: since 2026-05-04 the result
+        # endpoint rejects unauthenticated requests with 403.
+        # https://urlscan.io/blog/2026/03/18/api-auth-required/
+        async with httpx.AsyncClient(timeout=30, headers={"API-Key": api_key}) as client:
             # Submit scan
             resp = await client.post(
                 API_SUBMIT,
                 json={"url": url, "visibility": "unlisted"},
-                headers={"API-Key": api_key, "Content-Type": "application/json"},
             )
             resp.raise_for_status()
             uuid = resp.json()["uuid"]
