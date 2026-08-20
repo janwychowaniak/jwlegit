@@ -1,0 +1,42 @@
+title = "jwlegit gitleaks config"
+
+[extend]
+useDefault = true                    # keep the FULL built-in ruleset; rules below only ADD
+
+[allowlist]
+description = "false positives"
+paths = ['''\.gitleaks\.toml''']     # don't scan our own config (it carries rule regexes)
+
+# --- ADD-ON rules: one per credential format this project / its author actually
+# holds. Prefix- or context-anchored so they fire regardless of the entropy and
+# stopword heuristics that silently disable the built-in generic-api-key rule.
+
+[[rules]]
+id = "jw-anthropic-key"
+description = "Anthropic API key"
+regex = '''\bsk-ant-[A-Za-z0-9]{2,12}-[A-Za-z0-9_-]{80,120}\b'''
+keywords = ["sk-ant-"]
+
+[[rules]]
+id = "jw-google-api-key"
+description = "Google API key (AIza...), incl. GOOGLE_SAFEBROWSING_API_KEY"
+regex = '''\bAIza[0-9A-Za-z_-]{35}\b'''
+keywords = ["aiza"]
+
+[[rules]]
+id = "jw-virustotal-key"
+description = "VirusTotal API key (64 hex, name-anchored: bare 64-hex collides with SHA-256)"
+regex = '''(?i)\b(?:virustotal|vt)[_-]?(?:api[_-]?)?key\b\s*[:=]\s*['"]?[0-9a-f]{64}\b'''
+keywords = ["virustotal"]
+
+[[rules]]
+id = "jw-urlscan-key"
+description = "urlscan.io API key (UUID, name-anchored: bare UUIDs are all false positives)"
+regex = '''(?i)\burlscan[_-]?(?:api[_-]?)?key\b\s*[:=]\s*['"]?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b'''
+keywords = ["urlscan"]
+
+[[rules]]
+id = "jw-abuseipdb-key"
+description = "AbuseIPDB API key (80 alnum, name-anchored)"
+regex = '''(?i)\babuseipdb[_-]?(?:api[_-]?)?key\b\s*[:=]\s*['"]?[A-Za-z0-9]{60,100}\b'''
+keywords = ["abuseipdb"]

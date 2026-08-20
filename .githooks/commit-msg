@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# The commit MESSAGE body ($1 = message file) — the gap --staged cannot see.
+command -v gitleaks >/dev/null 2>&1 || { echo "⚠️  gitleaks not installed — skipping" >&2; exit 0; }
+# --config is REQUIRED: autodetection follows --source ($1 lives in .git/), NOT cwd —
+# without it this scan runs on DEFAULT rules only and the custom net never applies.
+gitleaks detect --no-git --source "$1" --config .gitleaks.toml --redact -v || {   # v8.19+: gitleaks dir "$1" --config ...
+  echo "❌ gitleaks: secret in the commit MESSAGE — commit blocked" >&2; exit 1; }
